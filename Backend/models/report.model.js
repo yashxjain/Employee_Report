@@ -1,126 +1,43 @@
 const mongoose = require("mongoose");
 
-const presSchema = new mongoose.Schema({
-  date: {
-    type: Date,
-    required: true,
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  title: {
-    type: String,
-    required: true,
-  },
-  supervisor: {
-    type: String,
-    required: true,
-  },
-  reviewto: {
-    type: Date,
-    required: true,
-  },
-  reviewfrom: {
-    type: Date,
-    required: true,
-  },
-  coreValuesAndObjectives: [
-    {
-      qualityofwork: [
-        {
-          rating: {
-            type: Number,
-          },
-          comments: {
-            type: String,
-          },
-        },
-      ],
-    },
-    {
-      attendenceandPanctuality: [
-        {
-          rating: {
-            type: Number,
-          },
-          comments: {
-            type: String,
-          },
-        },
-      ],
-    },
-    {
-      reliability: [
-        {
-          rating: {
-            type: Number,
-          },
-          comments: {
-            type: String,
-          },
-        },
-      ],
-    },
-    {
-      communicationskills: [
-        {
-          rating: {
-            type: Number,
-          },
-          comments: {
-            type: String,
-          },
-        },
-      ],
-    },
-    {
-      judgementanddecissionmaking: [
-        {
-          rating: {
-            type: Number,
-          },
-          comments: {
-            type: String,
-          },
-        },
-      ],
-    },
-  ],
-  jobspecificperformancecriteria: [
-    {
-      knowledgeofposition: [
-        {
-          rating: {
-            type: Number,
-          },
-          comments: {
-            type: String,
-          },
-        },
-      ],
-    },
-    {
-      workconsistency: [
-        {
-          rating: {
-            type: Number,
-          },
-          comments: {
-            type: String,
-          },
-        },
-      ],
-    },
-  ],
-  performancegoals: {
-    type: String,
-  },
-  overallrating: {
-    type: String,
-  },
+const QualityOfWorkSchema = new mongoose.Schema({
+  rating: String,
+  comments: String,
 });
 
-const PresModel = mongoose.model("report", presSchema);
+const CoreValuesAndObjectivesSchema = new mongoose.Schema({
+  qualityofwork: QualityOfWorkSchema,
+  attendanceandPunctuality: QualityOfWorkSchema,
+  reliability: QualityOfWorkSchema,
+  communicationSkills: QualityOfWorkSchema,
+  judgement: QualityOfWorkSchema,
+});
+
+const KnowledgeOfPositionSchema = new mongoose.Schema({
+  rating: String,
+  comments: String,
+});
+
+const JobSpecificPerformanceCriteriaSchema = new mongoose.Schema({
+  knowledgeofposition: KnowledgeOfPositionSchema,
+  workconsistency: KnowledgeOfPositionSchema,
+});
+
+const ReportSchema = new mongoose.Schema({
+  date: String,
+  name: String,
+  negative: String,
+  overallrating: String,
+  performancegoals: String,
+  positive: String,
+  reviewfrom: String,
+  reviewto: String,
+  supervisor: String,
+  title: String,
+  coreValuesAndObjectives: [CoreValuesAndObjectivesSchema],
+  jobspecificperformancecriteria: [JobSpecificPerformanceCriteriaSchema],
+});
+
+const PresModel = mongoose.model("report", ReportSchema);
 
 module.exports = PresModel;

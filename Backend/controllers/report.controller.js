@@ -41,7 +41,7 @@ const postPres = async (req, res) => {
       attachments: [
         {
           filename: "report.pdf",
-          path: pdfFileName, 
+          path: pdfFileName,
         },
       ],
     };
@@ -52,6 +52,7 @@ const postPres = async (req, res) => {
         status: 200,
         message: "report saved and emailed",
         pdfUrl: pdfFileName,
+        
       });
     } catch (emailError) {
       console.error(emailError);

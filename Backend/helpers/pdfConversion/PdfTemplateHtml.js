@@ -1,31 +1,27 @@
 function DownloadReportTemplate(data) {
-  function getCategoryName(index) {
-    switch (index) {
-      case 0:
-        return "Quality of Work";
-      case 1:
-        return "Attendance and Punctuality";
-      case 2:
-        return "Reliability";
-      case 3:
-        return "Communication Skills";
-      case 4:
-        return "Judgement and Decission Making";
-      default:
-        return "Unknown Category";
+  const totalJobSpecificPerformanceRating = Object.keys(
+    data.jobspecificperformancecriteria[0]
+  ).reduce((total, category) => {
+    if (category !== "_id") {
+      const rating =
+        parseFloat(data.jobspecificperformancecriteria[0][category].rating) ||
+        0;
+      return total + rating;
     }
-  }
-  function getCategoryNames(index) {
-    switch (index) {
-      case 0:
-        return "Knowledge of Position";
-      case 1:
-        return "Work Consistency";
+    return total;
+  }, 0);
 
-      default:
-        return "Unknown Category";
+  const totalCoreValuesRating = Object.keys(
+    data.coreValuesAndObjectives[0]
+  ).reduce((total, category) => {
+    if (category !== "_id") {
+      const rating =
+        parseFloat(data.coreValuesAndObjectives[0][category].rating) || 0;
+      return total + rating;
     }
-  }
+    return total;
+  }, 0);
+
   return `<!DOCTYPE html>
   <html>
     <head>
@@ -83,7 +79,7 @@ function DownloadReportTemplate(data) {
         .image {
           position: fixed;
           width: 800px;
-          height: 1100px;
+          height: 1120px;
           z-index: -1;
           left: 0px;
           top: 0;
@@ -108,13 +104,13 @@ function DownloadReportTemplate(data) {
               <td><p>Employee Name: ${data.name}</p></td>
               <td><p>Job Title: ${data.title}</p></td>
             </tr>
-             <tr>
+            <tr>
               <td><p>Supervisor/Reviewer: ${data.supervisor}</p></td>
-               <td>
-                 <p>
-                   Review Period From ${data.reviewfrom} <br />
-                   To: ${data.reviewto}
-                 </p>
+              <td>
+                <p>
+                  Review Period From ${data.reviewfrom} <br />
+                  To: ${data.reviewto}
+                </p>
               </td>
             </tr>
           </table>
@@ -122,115 +118,149 @@ function DownloadReportTemplate(data) {
         <div class="page-break-after page-content" style="margin-left: 50px">
           <h4>II. JOB-SPECIFIC PERFORMANCE CRITERIA</h4>
           <table>
-  <tr>
-    <th>PERFORMANCE CATEGORY</th>
-    <th>RATING</th>
-    <th>COMMENTS AND EXAMPLES</th>
-  </tr>
-  
-  ${data.jobspecificperformancecriteria
-    .map(
-      (category, index) => `
-        <tr>
-          <td>${getCategoryNames(index)}</td>
-          <td>${category[Object.keys(category)][0].rating}</td>
-          <td>${category[Object.keys(category)][0].comments}</td>
-        </tr>
-      `
-    )
-    .join("")}
-
-  <tr>
-    <td>Total</td>
-    <td>
-      ${data.jobspecificperformancecriteria.reduce(
-        (total, category) =>
-          total + Number(category[Object.keys(category)][0].rating),
-        0
-      )}
-    </td>
-  </tr>
-</table>
+            <tr>
+              <th>PERFORMANCE CATEGORY</th>
+              <th>RATING</th>
+              <th>COMMENTS AND EXAMPLES</th>
+            </tr>
+                <td>Knowledge of Position</td>
+                 <td>${
+                   data.jobspecificperformancecriteria[0].knowledgeofposition
+                     .rating
+                 }</td>
+                <td>${
+                  data.jobspecificperformancecriteria[0].knowledgeofposition
+                    .comments
+                }</td>   
+            <tr>
+              <tr>
+                <td>Work Consistency</td>
+                <td>${
+                  data.jobspecificperformancecriteria[0].workconsistency.rating
+                }</td>
+                <td>${
+                  data.jobspecificperformancecriteria[0].workconsistency
+                    .comments
+                }</td>
+              </tr>
+              <td>Total</td>
+              <td>${totalJobSpecificPerformanceRating.toFixed(2)}</td>
+            </tr>
+          </table>
         </div>
-        <div class="page-content" style="margin-left: 50px; margin-top: 200px;">
+        <div class="page-content" style="margin-left: 50px; margin-top: 200px">
           <h4>III. CORE VALUES AND OBJECTIVES</h4>
           <table>
-             <tr>
-               <th>PERFORMANCE CATEGORY</th>
-               <th>RATING</th>
-               <th>COMMENTS AND EXAMPLES</th>
-             </tr>
-             ${data.coreValuesAndObjectives
-               .map(
-                 (category, index) => `
-                  <tr>
-                    <td>${getCategoryName(index)}</td>
-                    <td>${category[Object.keys(category)][0].rating}</td>
-                    <td>${category[Object.keys(category)][0].comments}</td>
-                  </tr>
-                `
-               )
-               .join("")}
-             <tr>
-             <td>Total</td>
-             <td>
-               ${data.coreValuesAndObjectives.reduce(
-                 (total, category) =>
-                   total + Number(category[Object.keys(category)][0].rating),
-                 0
-               )}
-             </td>
-             
-             </tr>
-           </table>
+            <tr>
+              <th>PERFORMANCE CATEGORY</th>
+              <th>RATING</th>
+              <th>COMMENTS AND EXAMPLES</th>
+            </tr>
+            <td>Quality of Work</td>
+            <td>${data.coreValuesAndObjectives[0].qualityofwork.rating}</td>
+            <td>${data.coreValuesAndObjectives[0].qualityofwork.comments}</td>
+           
+            <tr>
+            </tr>
+            <td>Attendance and Punctuality</td>
+            <td>${
+              data.coreValuesAndObjectives[0].attendanceandPunctuality.rating
+            }</td>
+            <td>${
+              data.coreValuesAndObjectives[0].attendanceandPunctuality.comments
+            }</td>
+           
+            <tr>
+            </tr>
+            <td>Reliability</td>
+            <td>${data.coreValuesAndObjectives[0].reliability.rating}</td>
+            <td>${data.coreValuesAndObjectives[0].reliability.comments}</td>
+           
+            <tr>
+            </tr>
+            <td>Communication Skills</td>
+            <td>${
+              data.coreValuesAndObjectives[0].communicationSkills.rating
+            }</td>
+            <td>${
+              data.coreValuesAndObjectives[0].communicationSkills.comments
+            }</td>
+           
+            <tr>
+            </tr>
+            <td>Judgement and Decission Making</td>
+            <td>${data.coreValuesAndObjectives[0].judgement.rating}</td>
+            <td>${data.coreValuesAndObjectives[0].judgement.comments}</td>
+           
+            <tr>
+              <td>Total</td>
+              <td>${totalCoreValuesRating.toFixed(2)}</td>
+            
+            </tr>
+          </table>
         </div>
   
         <div class="page-break-after page-content" style="margin-left: 50px">
           <h4>IV. PERFORMANCE GOALS</h4>
           <table>
             <tr>
-            <td>${data.performancegoals}</td>
+              <td>${data.performancegoals}</td>
             </tr>
           </table>
         </div>
-        <div class="page-content" style="margin-left: 50px; margin-top: 200px;">
+  
+        <div class="page-content" style="margin-left: 50px; margin-top: 200px">
           <h4>V. OVERALL RATING</h4>
           <table>
-             <tr>
-               <td>
-                 <input type="checkbox" ${
-                   data.overallrating === "Exceeds Expectations"
-                     ? "checked"
-                     : ""
-                 } /> EXCEEDS EXPECTATIONS <br />
-                 The employee consistently performs at a high level that exceeds
-                 expectations
-               </td>
-               <td>
-                 <input type="checkbox" ${
-                   data.overallrating === "MEETS EXPECTATIONS" ? "checked" : ""
-                 } />MEETS EXPECTATIONS
-                 <br />Employee satisfies all essential job requirements; may
-                 exceed expectations periodically; demonstrates the likelihood of
-                 eventually exceeding expectations
-               </td>
-               <td>
-                 <input type="checkbox" ${
-                   data.overallrating === "NEEDS IMPROVEMENT" ? "checked" : ""
-                 }/>NEEDS IMPROVEMENT <br />The
-                 employee consistently performs below the required
-                 standards/expectations for the position; training or other action
-                 is necessary to correct performance
-               </td>
-               <td>
-                 <input type="checkbox" ${
-                   data.overallrating === "UNACCEPTABLE" ? "checked" : ""
-                 } />UNACCEPTABLE <br />The employee is unable or
-                 unwilling to perform required duties according to company
-                 standards; immediate improvement must be demonstrated
-               </td>
-             </tr>
-           </table>
+            <tr>
+              <td>
+                <input type="checkbox" ${
+                  data.overallrating === "EXCEEDS EXPECTATIONS" ? "checked" : ""
+                } /> EXCEEDS EXPECTATIONS <br />
+                The employee consistently performs at a high level that exceeds
+                expectations
+              </td>
+              <td>
+                <input type="checkbox" ${
+                  data.overallrating === "MEETS EXPECTATIONS" ? "checked" : ""
+                } />MEETS EXPECTATIONS
+                <br />Employee satisfies all essential job requirements; may
+                exceed expectations periodically; demonstrates the likelihood of
+                eventually exceeding expectations
+              </td>
+              <td>
+                <input type="checkbox" ${
+                  data.overallrating === "NEEDS IMPROVEMENT" ? "checked" : ""
+                }/>NEEDS IMPROVEMENT <br />The
+                employee consistently performs below the required
+                standards/expectations for the position; training or other action
+                is necessary to correct performance
+              </td>
+              <td>
+                <input type="checkbox" ${
+                  data.overallrating === "UNACCEPTABLE" ? "checked" : ""
+                } />UNACCEPTABLE <br />The employee is unable or
+                unwilling to perform required duties according to company
+                standards; immediate improvement must be demonstrated
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="page-content" style="margin-left: 50px">
+          <table>
+            <tr>
+              <td>
+                Positive
+                <br />
+                ${data.positive}
+                <br /><br />
+                Negative
+                <br />
+                ${data.negative}
+                <br /><br />
+              </td>
+            </tr>
+          </table>
         </div>
         <div class="page-content" style="margin-left: 50px">
           <h4>VI. EMPLOYEE COMMENTS (OPTIONAL)</h4>
