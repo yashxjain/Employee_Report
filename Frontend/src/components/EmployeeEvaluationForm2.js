@@ -15,6 +15,7 @@ import {
   Paper,
 } from "@mui/material";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const cellStyles = {
   border: "1px solid #ddd",
@@ -41,6 +42,7 @@ const columnWidths1 = {
 
 const EmployeeEvaluationForm2 = () => {
   const [formDataFromStorage, setFormDataFromStorage] = useState(null);
+  const navigate = useNavigate();
 
   const [formData1, setFormData1] = useState({
     jobspecificperformancecriteria: [
@@ -61,21 +63,17 @@ const EmployeeEvaluationForm2 = () => {
     negative: "",
   });
 
-  // State variables for overall rating checkboxes
   const [exceedsExpectations, setExceedsExpectations] = useState(false);
   const [meetsExpectations, setMeetsExpectations] = useState(false);
   const [needsImprovement, setNeedsImprovement] = useState(false);
   const [unacceptable, setUnacceptable] = useState(false);
 
-  // Function to handle changes in the checkboxes
   const handleOverallRatingChange = (rating) => {
-    // Update the respective state variable for the checkbox and set other checkboxes to false
     setExceedsExpectations(rating === "exceedsExpectations");
     setMeetsExpectations(rating === "meetsExpectations");
     setNeedsImprovement(rating === "needsImprovement");
     setUnacceptable(rating === "unacceptable");
 
-    // Update formData1's overallrating based on the checked checkbox
     setFormData1((prevFormData) => ({
       ...prevFormData,
       overallrating:
@@ -96,36 +94,111 @@ const EmployeeEvaluationForm2 = () => {
     }
   }, []);
 
+  const [positiveError, setPositiveError] = useState("");
+  const [negativeError, setNegativeError] = useState("");
+  const [performanceGoalsError, setPerformanceGoalsError] = useState("");
+  const [ratingError, setRatingError] = useState("");
+  const [knowledgeRatingError, setKnowledgeRatingError] = useState(false);
+  const [workConsistencyRatingError, setWorkConsistencyRatingError] =
+    useState(false);
+
   const handleChange = (e, section, fieldName, fieldType) => {
     const { value } = e.target;
 
     setFormData1((prevFormData) => {
       const updatedFormData = { ...prevFormData };
 
-      switch (section) {
-        case "knowledgeofposition":
-          updatedFormData.jobspecificperformancecriteria[0][fieldName][
-            fieldType
-          ] = value;
-          break;
-        case "performancegoals":
-          updatedFormData.performancegoals = value;
-          break;
-        case "positive":
-          updatedFormData.positive = value;
-          break;
-        case "negative":
-          updatedFormData.negative = value;
-          break;
-        default:
-          break;
+      if (section === "knowledgeofposition") {
+        if (
+          fieldName === "knowledgeofposition" ||
+          fieldName === "workconsistency"
+        ) {
+          if (fieldType === "rating") {
+            updatedFormData.jobspecificperformancecriteria[0][fieldName][
+              fieldType
+            ] = value;
+            const intValue = parseInt(value);
+            if (value.trim() !== "" && (isNaN(intValue) || intValue > 10)) {
+              console.error(
+                "Rating should be a number less than or equal to 10"
+              );
+              if (fieldName === "knowledgeofposition") {
+                setKnowledgeRatingError(
+                  "Rating should be a number less than or equal to 10"
+                );
+              } else if (fieldName === "workconsistency") {
+                setWorkConsistencyRatingError(
+                  "Rating should be a number less than or equal to 10"
+                );
+              }
+            } else {
+              if (fieldName === "knowledgeofposition") {
+                setKnowledgeRatingError("");
+              } else if (fieldName === "workconsistency") {
+                setWorkConsistencyRatingError("");
+              }
+            }
+          } else {
+            updatedFormData.jobspecificperformancecriteria[0][fieldName][
+              fieldType
+            ] = value;
+          }
+        }
+      } else if (section === "performancegoals") {
+        updatedFormData.performancegoals = value;
+        setPerformanceGoalsError(
+          value.trim() === "" ? "This field is required" : ""
+        );
+      } else if (section === "positive") {
+        updatedFormData.positive = value;
+        setPositiveError(value.trim() === "" ? "This field is required" : "");
+      } else if (section === "negative") {
+        updatedFormData.negative = value;
+        setNegativeError(value.trim() === "" ? "This field is required" : "");
       }
 
       return updatedFormData;
     });
   };
+  const error =
+    formData1.jobspecificperformancecriteria[0]?.knowledgeofposition?.rating !==
+      null &&
+    (isNaN(
+      parseInt(
+        formData1.jobspecificperformancecriteria[0]?.knowledgeofposition?.rating
+      )
+    ) ||
+      parseInt(
+        formData1.jobspecificperformancecriteria[0]?.knowledgeofposition?.rating
+      ) > 10);
+
+  const workconsistencyError =
+    formData1.jobspecificperformancecriteria[0]?.workconsistency?.rating !==
+      null &&
+    (isNaN(
+      parseInt(
+        formData1.jobspecificperformancecriteria[0]?.workconsistency?.rating
+      )
+    ) ||
+      parseInt(
+        formData1.jobspecificperformancecriteria[0]?.workconsistency?.rating
+      ) > 10);
 
   const handleSubmitForm2 = () => {
+    if (
+      formData1.positive.trim() === "" ||
+      formData1.negative.trim() === "" ||
+      formData1.performancegoals.trim() === ""
+    ) {
+      setPositiveError(
+        formData1.positive.trim() === "" ? "This field is required" : ""
+      );
+      setNegativeError(
+        formData1.negative.trim() === "" ? "This field is required" : ""
+      );
+      return;
+    }
+
     const combinedFormData = {
       ...formData1,
       ...formDataFromStorage,
@@ -138,6 +211,7 @@ const EmployeeEvaluationForm2 = () => {
       .then((response) => {
         console.log("Data sent successfully");
         console.log("API Response:", response.data);
+        navigate("/");
       })
       .catch((error) => {
         console.error("Error sending data:", error);
@@ -183,15 +257,14 @@ const EmployeeEvaluationForm2 = () => {
                 <TableRow>
                   <TableCell
                     style={{ ...cellStyles, width: columnWidths.col1 }}
-                    contentEditable={true}
                   >
                     <div>
                       <strong> Knowledge of Position:</strong>
                     </div>
                   </TableCell>
+
                   <TableCell
                     style={{ ...cellStyles, width: columnWidths.col2 }}
-                    contentEditable={true}
                   >
                     <TextField
                       value={
@@ -206,8 +279,15 @@ const EmployeeEvaluationForm2 = () => {
                           "rating"
                         )
                       }
+                      error={knowledgeRatingError} // Set this to true when there's a validation error
+                      helperText={
+                        knowledgeRatingError
+                          ? "Rating should be a number less than or equal to 10"
+                          : ""
+                      }
                     />
                   </TableCell>
+
                   <TableCell
                     style={{ ...cellStyles, width: columnWidths.col3 }}
                   >
@@ -224,21 +304,22 @@ const EmployeeEvaluationForm2 = () => {
                           "comments"
                         )
                       }
+                      inputProps={{ maxLength: 300 }}
+                      fullWidth
+                      multiline
                     />
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell
                     style={{ ...cellStyles, width: columnWidths.col1 }}
-                    contentEditable={true}
                   >
                     <div>
-                      <strong>Quality of Work:</strong>
+                      <strong>Work Consistency:</strong>
                     </div>
                   </TableCell>
                   <TableCell
                     style={{ ...cellStyles, width: columnWidths.col2 }}
-                    contentEditable={true}
                   >
                     <TextField
                       value={
@@ -252,6 +333,12 @@ const EmployeeEvaluationForm2 = () => {
                           "workconsistency",
                           "rating"
                         )
+                      }
+                      error={workConsistencyRatingError} // Set this to true when there's a validation error
+                      helperText={
+                        workConsistencyRatingError
+                          ? "Rating should be a number less than or equal to 10"
+                          : ""
                       }
                     />
                   </TableCell>
@@ -272,6 +359,9 @@ const EmployeeEvaluationForm2 = () => {
                           "comments"
                         )
                       }
+                      inputProps={{ maxLength: 300 }}
+                      fullWidth
+                      multiline
                     />
                   </TableCell>
                 </TableRow>
@@ -296,16 +386,18 @@ const EmployeeEvaluationForm2 = () => {
                 <TableRow>
                   <TableCell
                     style={{ ...cellStyles, width: columnWidths.col1 }}
-                    contentEditable={true}
                   >
                     <TextField
                       fullWidth
                       id="PerformanceGoals"
                       name="performancegoals"
-                      label="performance goals"
-                      placeholder="performance goals"
+                      label="Performance goals"
+                      placeholder="Performance goals"
                       value={formData1.performancegoals}
                       onChange={(e) => handleChange(e, "performancegoals")}
+                      error={!!performanceGoalsError}
+                      helperText={performanceGoalsError}
+                      multiline
                     />
                   </TableCell>
                 </TableRow>
@@ -347,7 +439,6 @@ const EmployeeEvaluationForm2 = () => {
                       >
                         EXCEEDS EXPECTATIONS
                       </Typography>
-                      
                     </div>
                   </TableCell>
 
@@ -429,32 +520,39 @@ const EmployeeEvaluationForm2 = () => {
                         flexDirection: "column",
                         justifyContent: "space-between",
                         height: "100%",
+                        width: "100%",
                       }}
                     >
                       {/* First set of data at the top */}
                       <div style={{ lineHeight: "1.5" }}>
                         <br />
                         <TextField
-                          fullWidth
                           id="positive"
                           name="positive"
-                          label="positive"
-                          placeholder="positive"
+                          label="Positive"
+                          placeholder="Positive"
                           value={formData1.positive}
                           onChange={(e) => handleChange(e, "positive")}
+                          error={!!positiveError}
+                          helperText={positiveError}
+                          multiline
+                          fullWidth
                         />
                       </div>
                       {/* Second set of data at the bottom */}
                       <div style={{ lineHeight: "1.5" }}>
                         <br />
                         <TextField
-                          fullWidth
                           id="negative"
                           name="negative"
-                          label="negative"
-                          placeholder="negative"
+                          label="Negative"
+                          placeholder="Negative"
                           value={formData1.negative}
                           onChange={(e) => handleChange(e, "negative")}
+                          error={!!negativeError}
+                          helperText={negativeError}
+                          multiline
+                          fullWidth
                         />
                       </div>
                     </div>
@@ -469,7 +567,12 @@ const EmployeeEvaluationForm2 = () => {
             variant="contained"
             color="primary"
             onClick={handleSubmitForm2}
-            style={{ marginTop: "20px" }}
+            style={{
+              marginTop: "10px",
+              backgroundColor: "blue",
+              fontSize: "16px",
+              borderRadius: "7px",
+            }}
           >
             Submit
           </Button>

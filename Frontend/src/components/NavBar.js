@@ -34,7 +34,7 @@ const Navbar = () => {
 
           <li>
             {" "}
-            <Link to="/Generatereport">
+            <Link to="/generatereport-step-one">
               <button className="report-fraud-button">Generate Report</button>
             </Link>
           </li>

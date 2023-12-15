@@ -8,7 +8,7 @@ const Generatereport = () => {
   const location = useLocation();
 
 
-  const isStepOne = location.pathname === "/Generatereport" || location.pathname === "/Generatereport2";
+  const isStepOne = location.pathname === "/generatereport-step-one" || location.pathname === "/generatereport-step-two";
 
   return (
     <div className="card">

@@ -24,8 +24,8 @@ function App() {
         <Routes>
           <Route path="/Privacypolicy" element={<Privacypolicy />}></Route>
           <Route path="/Termsconditions" element={<Termsconditions />}></Route>
-          <Route path="/Generatereport" element={<Generatereport />}></Route>
-          <Route path="/Generatereport2" element={<Generatereport2 />}></Route>
+          <Route path="/generatereport-step-one" element={<Generatereport />}></Route>
+          <Route path="/generatereport-step-two" element={<Generatereport2 />}></Route>
         
           <Route path="/" element={<Home />}></Route>
        

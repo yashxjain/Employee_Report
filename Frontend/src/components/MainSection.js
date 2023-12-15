@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 function HeroSection() {
   return (
@@ -10,8 +10,6 @@ function HeroSection() {
             fontFamily: "poppins",
             marginLeft: "-6rem",
             marginTop: "25px",
-            
-            
           }}
         >
           Employee Reporting Made Simple

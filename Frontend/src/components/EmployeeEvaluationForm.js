@@ -14,7 +14,7 @@ import {
   Paper,
   Box,
 } from "@mui/material";
-import { useHistory, useNavigate } from "react-router-dom"; // Step 1
+import { useHistory, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const cellStyles = {
@@ -30,7 +30,7 @@ const cellStyles = {
 const columnWidths = {
   col1: "130px", // Set the width for the first column
   col2: "50px", // Set the width for the second column
-  col3: "120px", // Set the width for the third column
+  col3: "130px", // Set the width for the third column
   col4: "180px", // Set the width for the fourth column
 };
 
@@ -71,40 +71,177 @@ const EmployeeEvaluationForm = () => {
 
   const handleChange = (e, section, fieldName, fieldType) => {
     const { value } = e.target;
+
     if (section === "employeeInfo") {
       setFormData({ ...formData, [fieldName]: value });
     } else if (section === "qualityOfWork") {
       const updatedFormData = { ...formData };
-      if (fieldName === "qualityofwork") {
-        updatedFormData.coreValuesAndObjectives[0][fieldName][fieldType] =
-          value;
-      } else if (fieldName === "attendanceandPunctuality") {
-        updatedFormData.coreValuesAndObjectives[0][fieldName][fieldType] =
-          value;
-      } else if (fieldName === "reliability") {
-        updatedFormData.coreValuesAndObjectives[0][fieldName][fieldType] =
-          value;
-      } else if (fieldName === "communicationSkills") {
-        updatedFormData.coreValuesAndObjectives[0][fieldName][fieldType] =
-          value;
-      } else if (fieldName === "judgement") {
-        updatedFormData.coreValuesAndObjectives[0][fieldName][fieldType] =
-          value;
+      if (
+        fieldName === "qualityofwork" ||
+        fieldName === "attendanceandPunctuality" ||
+        fieldName === "reliability" ||
+        fieldName === "communicationSkills" ||
+        fieldName === "judgement"
+      ) {
+        if (fieldType === "rating") {
+          updatedFormData.coreValuesAndObjectives[0][fieldName][fieldType] =
+            value;
+          const intValue = parseInt(value);
+          if (value.trim() !== "" && (isNaN(intValue) || intValue > 10)) {
+            console.error("Rating should be a number less than or equal to 10");
+          }
+        } else {
+          updatedFormData.coreValuesAndObjectives[0][fieldName][fieldType] =
+            value;
+        }
       }
-
       setFormData(updatedFormData);
     }
-   
+  };
+
+  const error =
+    formData.coreValuesAndObjectives[0]?.qualityofwork?.rating !== null &&
+    (isNaN(
+      parseInt(formData.coreValuesAndObjectives[0]?.qualityofwork?.rating)
+    ) ||
+      parseInt(formData.coreValuesAndObjectives[0]?.qualityofwork?.rating) >
+        10);
+
+  const attendancePunctualityError =
+    formData.coreValuesAndObjectives[0]?.attendanceandPunctuality?.rating !==
+      null &&
+    (isNaN(
+      parseInt(
+        formData.coreValuesAndObjectives[0]?.attendanceandPunctuality?.rating
+      )
+    ) ||
+      parseInt(
+        formData.coreValuesAndObjectives[0]?.attendanceandPunctuality?.rating
+      ) > 10);
+
+  const reliabilityError =
+    formData.coreValuesAndObjectives[0]?.reliability?.rating !== null &&
+    (isNaN(
+      parseInt(formData.coreValuesAndObjectives[0]?.reliability?.rating)
+    ) ||
+      parseInt(formData.coreValuesAndObjectives[0]?.reliability?.rating) > 10);
+
+  const communicationSkillsError =
+    formData.coreValuesAndObjectives[0]?.communicationSkills?.rating !== null &&
+    (isNaN(
+      parseInt(formData.coreValuesAndObjectives[0]?.communicationSkills?.rating)
+    ) ||
+      parseInt(
+        formData.coreValuesAndObjectives[0]?.communicationSkills?.rating
+      ) > 10);
+  const judgementError =
+    formData.coreValuesAndObjectives[0]?.judgement?.rating !== null &&
+    (isNaN(parseInt(formData.coreValuesAndObjectives[0]?.judgement?.rating)) ||
+      parseInt(formData.coreValuesAndObjectives[0]?.judgement?.rating) > 10);
+
+  const [errors, setErrors] = useState({
+    date: "",
+    name: "",
+    supervisor: "",
+    title: "",
+    reviewfrom: "",
+    reviewto: "",
+    qualityOfWork: {
+      qualityofwork: "",
+      attendanceandPunctuality: "",
+      reliability: "",
+      communicationSkills: "",
+      judgement: "",
+    },
+  });
+
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = { ...errors };
+
+    // Validation logic for date, name, supervisor, title, reviewfrom, reviewto
+
+    if (!formData.date.trim()) {
+      newErrors.date = "This field is required";
+      valid = false;
+    } else {
+      newErrors.date = "";
+    }
+    if (!formData.name.trim()) {
+      newErrors.name = "This field is required";
+      valid = false;
+    } else {
+      newErrors.name = "";
+    }
+    if (!formData.title.trim()) {
+      newErrors.title = "This field is required";
+      valid = false;
+    } else {
+      newErrors.title = "";
+    }
+    if (!formData.supervisor.trim()) {
+      newErrors.supervisor = "This field is required";
+      valid = false;
+    } else {
+      newErrors.supervisor = "";
+    }
+
+    // Apply similar validation logic for other fields...
+
+    // Validation logic for quality of work categories
+    const qualityOfWorkErrors = { ...errors.qualityOfWork };
+
+    for (const key in formData.coreValuesAndObjectives[0]) {
+      if (formData.coreValuesAndObjectives[0].hasOwnProperty(key)) {
+        const category = formData.coreValuesAndObjectives[0][key];
+        if (category.rating === null || category.rating === "") {
+          qualityOfWorkErrors[key] = "This field is required";
+          valid = false;
+        } else if (
+          isNaN(parseInt(category.rating)) ||
+          parseInt(category.rating) > 10
+        ) {
+          qualityOfWorkErrors[key] =
+            "Rating should be a number less than or equal to 10";
+          valid = false;
+        } else {
+          qualityOfWorkErrors[key] = "";
+        }
+      }
+    }
+
+    newErrors.qualityOfWork = qualityOfWorkErrors;
+
+    setErrors(newErrors);
+    return valid;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
   };
 
-  const handleNextClick = () => {
-    localStorage.setItem("formData", JSON.stringify(formData));
+  const handleNextClick = (e) => {
+    e.preventDefault();
+    let fieldsFilled = true;
 
-    navigate("/Generatereport2");
+    // Check if any rating or comments field is empty
+    // for (const key in formData.coreValuesAndObjectives[0]) {
+    //   const category = formData.coreValuesAndObjectives[0][key];
+    //   if (
+    //     category.rating === null ||
+    //     category.rating === "" ||
+    //     category.comments.trim() === ""
+    //   ) {
+    //     fieldsFilled = false;
+    //     console.error("Please fill in all rating and comments fields.");
+    //     break; // Break the loop if any field is empty
+    //   }
+    // }
+
+    if (fieldsFilled && validateForm()) {
+      localStorage.setItem("formData", JSON.stringify(formData));
+      navigate("/generatereport-step-two");
+    }
   };
 
   return (
@@ -115,15 +252,19 @@ const EmployeeEvaluationForm = () => {
             <TableRow>
               <TableCell style={{ width: "20%" }}>
                 <Box p={1} mt={-24}>
-                  <Typography variant="h5" gutterBottom></Typography>
-                  <TextField
-                    fullWidth
-                    id="Date"
+                  <Typography variant="h5" gutterBottom>
+                    Date
+                  </Typography>
+                  <input
+                    type="date"
                     name="date"
+                    id="Date"
                     label="Date"
-                    placeholder="Date"
                     value={formData.date}
                     onChange={(e) => handleChange(e, "employeeInfo", "date")}
+                    style={{ width: "150px", height: "50px" }}
+                    error={!!errors.date}
+                    helperText={errors.date}
                   />
                 </Box>
               </TableCell>
@@ -137,6 +278,10 @@ const EmployeeEvaluationForm = () => {
                       <TableBody>
                         <TableRow>
                           <TableCell>
+                            <Typography variant="h6" gutterBottom>
+                              Employee Name
+                            </Typography>
+
                             <TextField
                               fullWidth
                               id="employeeName"
@@ -147,9 +292,14 @@ const EmployeeEvaluationForm = () => {
                               onChange={(e) =>
                                 handleChange(e, "employeeInfo", "name")
                               }
+                              error={!!errors.name}
+                              helperText={errors.name}
                             />
                           </TableCell>
                           <TableCell>
+                            <Typography variant="h6" gutterBottom>
+                              Job Title
+                            </Typography>
                             <TextField
                               fullWidth
                               id="jobTitle"
@@ -160,11 +310,16 @@ const EmployeeEvaluationForm = () => {
                               onChange={(e) =>
                                 handleChange(e, "employeeInfo", "title")
                               }
+                              error={!!errors.title} // Check if there's an error for Employee Name
+                              helperText={errors.title}
                             />
                           </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell>
+                            <Typography variant="h6" gutterBottom>
+                              Supervisor
+                            </Typography>
                             <TextField
                               fullWidth
                               id="supervisor"
@@ -175,11 +330,16 @@ const EmployeeEvaluationForm = () => {
                               onChange={(e) =>
                                 handleChange(e, "employeeInfo", "supervisor")
                               }
+                              error={!!errors.supervisor}
+                              helperText={errors.supervisor}
                             />
                           </TableCell>
                           <TableCell>
-                            <TextField
-                              fullWidth
+                            <Typography variant="h6" gutterBottom>
+                              Review From Date
+                            </Typography>
+                            <input
+                              type="date"
                               id="reviewfrom"
                               name="reviewfrom"
                               label="review from"
@@ -188,14 +348,19 @@ const EmployeeEvaluationForm = () => {
                               onChange={(e) =>
                                 handleChange(e, "employeeInfo", "reviewfrom")
                               }
+                              style={{ width: "150px", height: "50px" }}
+                              error={!!errors.reviewfrom} // Check if there's an error for Employee Name
+                              helperText={errors.reviewfrom}
                             />
                           </TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell>
-                            {/* Another field for Date To */}
-                            <TextField
-                              fullWidth
+                            <Typography variant="h6" gutterBottom>
+                              Review To Date
+                            </Typography>
+                            <input
+                              type="date"
                               id="dateTo"
                               name="reviewto"
                               label="review to"
@@ -204,9 +369,12 @@ const EmployeeEvaluationForm = () => {
                               onChange={(e) =>
                                 handleChange(e, "employeeInfo", "reviewto")
                               }
+                              style={{ width: "150px", height: "50px" }}
+                              error={!!errors.reviewto} // Check if there's an error for Employee Name
+                              helperText={errors.reviewto}
                             />
                           </TableCell>
-                          {/* Leave one TableCell empty to align with the layout */}
+
                           <TableCell></TableCell>
                         </TableRow>
                       </TableBody>
@@ -250,10 +418,7 @@ const EmployeeEvaluationForm = () => {
                   <strong>Quality of Work:</strong>
                 </div>
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col2 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col2 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]?.qualityofwork?.rating
@@ -261,12 +426,16 @@ const EmployeeEvaluationForm = () => {
                   onChange={(e) =>
                     handleChange(e, "qualityOfWork", "qualityofwork", "rating")
                   }
+                  error={error} // Set this to true when there's a validation error
+                  helperText={
+                    error
+                      ? "Rating should be a number less than or equal to 10"
+                      : ""
+                  }
+                  // Other props...
                 />
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col3 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col3 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]?.qualityofwork?.comments
@@ -279,6 +448,9 @@ const EmployeeEvaluationForm = () => {
                       "comments"
                     )
                   }
+                  inputProps={{ maxLength: 300 }}
+                  fullWidth
+                  multiline
                 />
               </TableCell>
             </TableRow>
@@ -288,10 +460,7 @@ const EmployeeEvaluationForm = () => {
                   <strong>Attendance and Punctuality:</strong>
                 </div>
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col2 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col2 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]
@@ -305,12 +474,15 @@ const EmployeeEvaluationForm = () => {
                       "rating"
                     )
                   }
+                  error={attendancePunctualityError} // Set this to true when there's a validation error
+                  helperText={
+                    attendancePunctualityError
+                      ? "Rating should be a number less than or equal to 10"
+                      : ""
+                  }
                 />
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col3 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col3 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]
@@ -324,6 +496,9 @@ const EmployeeEvaluationForm = () => {
                       "comments"
                     )
                   }
+                  inputProps={{ maxLength: 300 }}
+                  fullWidth
+                  multiline
                 />
               </TableCell>
             </TableRow>
@@ -334,10 +509,7 @@ const EmployeeEvaluationForm = () => {
                   <strong>Reliability:</strong>
                 </div>
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col2 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col2 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]?.reliability?.rating
@@ -345,12 +517,15 @@ const EmployeeEvaluationForm = () => {
                   onChange={(e) =>
                     handleChange(e, "qualityOfWork", "reliability", "rating")
                   }
+                  error={reliabilityError} // Set this to true when there's a validation error
+                  helperText={
+                    reliabilityError
+                      ? "Rating should be a number less than or equal to 10"
+                      : ""
+                  }
                 />
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col3 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col3 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]?.reliability?.comments
@@ -358,6 +533,9 @@ const EmployeeEvaluationForm = () => {
                   onChange={(e) =>
                     handleChange(e, "qualityOfWork", "reliability", "comments")
                   }
+                  inputProps={{ maxLength: 300 }}
+                  fullWidth
+                  multiline
                 />
               </TableCell>
             </TableRow>
@@ -367,10 +545,7 @@ const EmployeeEvaluationForm = () => {
                   <strong>Communication and Skills:</strong>
                 </div>
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col2 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col2 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]?.communicationSkills
@@ -384,12 +559,15 @@ const EmployeeEvaluationForm = () => {
                       "rating"
                     )
                   }
+                  error={communicationSkillsError} // Set this to true when there's a validation error
+                  helperText={
+                    communicationSkillsError
+                      ? "Rating should be a number less than or equal to 10"
+                      : ""
+                  }
                 />
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col3 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col3 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]?.communicationSkills
@@ -403,6 +581,9 @@ const EmployeeEvaluationForm = () => {
                       "comments"
                     )
                   }
+                  inputProps={{ maxLength: 300 }}
+                  fullWidth
+                  multiline
                 />
               </TableCell>
             </TableRow>
@@ -412,21 +593,21 @@ const EmployeeEvaluationForm = () => {
                   <strong>Judgement and Decission Making:</strong>
                 </div>
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col2 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col2 }}>
                 <TextField
                   value={formData.coreValuesAndObjectives[0]?.judgement?.rating}
                   onChange={(e) =>
                     handleChange(e, "qualityOfWork", "judgement", "rating")
                   }
+                  error={judgementError} // Set this to true when there's a validation error
+                  helperText={
+                    judgementError
+                      ? "Rating should be a number less than or equal to 10"
+                      : ""
+                  }
                 />
               </TableCell>
-              <TableCell
-                style={{ ...cellStyles, width: columnWidths.col3 }}
-                contentEditable={true}
-              >
+              <TableCell style={{ ...cellStyles, width: columnWidths.col3 }}>
                 <TextField
                   value={
                     formData.coreValuesAndObjectives[0]?.judgement?.comments
@@ -434,6 +615,9 @@ const EmployeeEvaluationForm = () => {
                   onChange={(e) =>
                     handleChange(e, "qualityOfWork", "judgement", "comments")
                   }
+                  inputProps={{ maxLength: 300 }}
+                  fullWidth
+                  multiline
                 />
               </TableCell>
             </TableRow>
@@ -443,7 +627,7 @@ const EmployeeEvaluationForm = () => {
       <Button
         variant="contained"
         color="primary"
-        onClick={handleNextClick} // This only stores data in local storage and navigates to Form 2
+        onClick={handleNextClick}
         style={{ marginTop: "20px" }}
       >
         Next
